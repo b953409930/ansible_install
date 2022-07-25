@@ -1,0 +1,19 @@
+---
+# tasks file for elasticsearch
+- name: stop firewalld and selinux
+  import_tasks: firewalld.yml
+
+- name: sync time
+  import_tasks: sync_time.yml
+
+- name: Initialization settings
+  import_tasks: limit.yml
+
+- name: install elasticserach
+  import_tasks: install.yml
+
+- name: copy conf
+  import_tasks: conf.yml
+
+- name: create ES template
+  import_tasks: create_template.yml

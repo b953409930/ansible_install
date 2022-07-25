@@ -1,0 +1,38 @@
+---
+# tasks file for idhub
+- name: mkdir data dir
+  file:
+    path: "{{ path }}/idhub"
+    state: directory
+
+- name: Create soft connection
+  file:
+    name: Data directory pointing /opt
+    path: /opt/idhub/
+    state: link
+    src: "{{ path }}/idhub"
+  when: path != "/opt"
+
+- name: copy docker-compose.yml
+  template:
+    src: docker-compose.yml.j2
+    dest: /opt/idhub/docker-compose.yml
+    backup: yes
+  notify: restart idhub
+
+- name: make license.yaml
+  block:
+  - name: cpoy script
+    copy:
+      src: make_license.yaml.sh
+      dest: /tmp/make_license.yaml.sh
+      force: no
+  - name: sh script
+    shell:
+      chdir: /tmp
+      cmd: bash make_license.yaml.sh {{ path }}
+  - name: start service
+    shell:
+      chdir: /opt/idhub
+      cmd: docker-compose up -d
+

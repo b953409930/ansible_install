@@ -1,0 +1,12 @@
+---
+# handlers file for snms
+- name: restart snms
+  shell:
+    cmd: docker-compose down&&docker-compose up -d
+    chdir: /opt/snms/
+  ignore_errors: yes
+
+- name: restart nginx
+  shell:
+    cmd: 'docker exec -it snms-vue bash -c "nginx -s reload"'
+  ignore_errors: yes

@@ -1,0 +1,44 @@
+[common]
+server_port = {{ shsrs_server_port }}
+server_ip = 127.0.0.1
+
+http_flag = 1
+proxy_port = {{ shsrs_proxy_port }}
+only_ipv4 = 0
+
+https_flag = 0
+https_port = 8986
+
+work_thread_num = 8
+core_file_flag = 1
+#是否开启白名单 0否 1是
+is_white_list = 0
+#允许同时登陆的最大用户数
+max_login_user = 10000
+#ip白名单列表。用分号分割
+white_ip_list = 
+#1 支持解析和管理  0 只支持解析
+management_flag = 1
+
+#作为服务端超时时间ms
+http_time_out = 5000
+max_inactive_time = 5000
+
+privateServKey = server.key
+servCert = server.crt
+servDhParm = dh768.pem
+[log]
+#log  FATAL_ = 0, ERROR_=1, WARN_=2, INFO_=3, DEBUG_=4, TRACE_=5
+sys_log_level = {{ sys_log_level }}
+#0 split by day, 1 split by size
+log_type = 1 
+#仅当log_type = 1，log_size 和 log_max_index才生效
+#unit : MB
+log_size = 500 
+log_max_index = 10
+#日志是否为绝对路径 0相对路径 1绝对路径
+is_absolute_log = 0
+#日志的绝对路径
+absolute_log_path = /home/log
+[url]
+handle_url=

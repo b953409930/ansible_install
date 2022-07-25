@@ -1,0 +1,14 @@
+---
+#导入elasticsearch.yml
+- name: copy es_restart.sh
+  copy:
+    src: es_restart.sh
+    dest: /tmp/es_restart.sh
+
+- name: copy elasticsearch.yml
+  template:
+    src: elasticsearch.yml.j2
+    dest: /opt/els/config/elasticsearch.yml
+  notify: 
+  - restart elasticsearch
+- meta: flush_handlers

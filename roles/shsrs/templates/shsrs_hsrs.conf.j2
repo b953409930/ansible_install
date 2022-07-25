@@ -1,0 +1,84 @@
+[common]
+#0 TOP, 1 SECOND, 2 ENTERPRISE
+site_type = 1 
+#0 register_mysql, 1 resolver_bdb, 2 resolver_rocksdb, 3 register_mongodb(enable when site_type is LHS), 4 resolver_mongodb(enable when site_type is LHS)
+server_type = 0
+server_port = {{ shsrs_server_port }}
+work_thread_num = 8
+channel_num = 10000
+udp_switch = {{ udp_switch }}
+ipv6_switch = 1
+secure_channel_switch = 0
+open_message_credential = 1
+#unit : millisecond, 空闲连接存活时间, 默认30s
+max_inactive_time = 30000
+max_tcp_socket_num_per_one_thread = 10240
+#0 no core, 1 generate core
+core_file_flag = 1
+manager_msg_port = 26410
+
+[log]
+#日志路径，支持绝对路径和相对路径
+log_path = log
+#log  FATAL_ = 0, ERROR_=1, WARN_=2, INFO_=3, DEBUG_=4, TRACE_=5
+sys_log_level = {{ sys_log_level }}
+perf_log_level = 5
+#0 split by day, 1 split by size
+log_type = 0 
+#仅当log_type = 1，log_size 和 log_max_index才生效
+#unit : MB
+log_size = 500 
+log_max_index = 10
+
+[mq]
+#rabbitmq
+rabbitmq_switch = {{ mq_switch }}
+rabbitmq_host = {{ mq_host }}
+rabbitmq_port = {{ mq_port }}
+rabbitmq_user = teleinfo
+rabbitmq_passwd = teleinfo
+exchange_name = {{ mq_exchange_name }}
+
+[register]
+resolver_server_ip_port = {{ shns_host }}-{{ shns_server_port }}
+register_msg_port = 26411
+#unit : second, 检查是否需要发送主动更新通知的间隔时间
+active_update_check_interval = 600
+active_update_interval_id_num = 20000
+active_update_tcp_connect_retry_num = 3
+#unit : second
+full_update_interval_time = 864000
+full_update_interval_id_num = 20000
+load_na_interval_second = 30
+server_login_switch = 0
+#db
+db_server_url = {{ mysql_db_url }}
+#mongo default port:27017, mysql default port:3306
+db_server_port = {{ mysql_db_port }}
+db_server_user = {{ mysql_db_user }}
+db_server_password = {{ mysql_db_password }}
+db_name = {{ mysql_db_idis_name }}
+#只用于设置mysql超时时间
+db_server_connect_time_out = 10
+db_server_read_time_out = 10
+db_server_write_time_out = 10
+#只用于mongo进行用户的身份验证，默认库是admin。mysql用户请忽略此配置。
+db_for_user_authentication = admin
+
+[resolver]
+#resolver data sync as client
+register_server_ip_port = 192.168.150.13-2641
+resolver_msg_port_1 = 26411
+resolver_msg_port_2 = 26412
+#unit : second
+resolver_polling_interval_time = 30
+
+#resolver data sync service, 1 for enable, 0 for disable
+resolver_sync_service = 0
+resolver_incr_init_id = 10000
+full_update_interval_time = 864000
+full_update_interval_id_num = 20000
+#db, unit : MB
+db_path = db
+bdb_na_cache_size = 100
+bdb_handle_cache_size = 30720

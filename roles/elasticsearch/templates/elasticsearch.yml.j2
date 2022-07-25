@@ -1,0 +1,33 @@
+{% if es_config['cluster.name'] is not defined %}
+cluster.name: my-application
+{% endif %}
+#如果是三节点，三台分别是node-1、node-2、node-3
+{% if es_config['node.name'] is not defined %}
+node.name: {{ inventory_hostname }}
+{% endif %}
+network.host: 0.0.0.0
+# network.publish_host本机IP
+{% if es_config['network.publish_host'] is not defined %}
+network.publish_host: {{ inventory_hostname }}
+{% endif %}
+{% if es_config['http.port'] is not defined %}
+http.port: 9200
+{% endif %}
+{% if es_config['transport.tcp.port'] is not defined %}
+transport.tcp.port: 9300
+{% endif %}
+# 集群所有节点IP
+{% macro discovery(loop,sep=',',deli='') -%}
+{{ sep if not loop.last else deli }}
+{%- endmacro %}
+discovery.seed_hosts: [{%for item in es_host%}
+"{{ item }}"{{ discovery(loop) }}
+{%- endfor %}]
+# 集群所有节点的name
+cluster.initial_master_nodes: [{%for item in es_host%}
+"{{ item }}"{{ discovery(loop) }}
+{%- endfor %}]
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+http.cors.allow-methods: OPTIONS, HEAD, GET, POST, PUT, DELETE
+http.cors.allow-headers: "X-Requested-With, Content-Type, Content-Length, X-User"

@@ -1,0 +1,56 @@
+---
+# tasks file for install idmonitor
+- name: install minio
+  block:
+    - name: tar minio.tar.gz
+      unarchive:
+        src: minio.tar.gz
+        dest: "{{ path }}"
+        creates: "{{ path }}/minio"
+    - name: Create soft connection for minio
+      file:
+        path: /opt/minio
+        state: link
+        src: "{{ path }}/minio"
+      when: path != "/opt"
+    - name: start minio
+      shell:
+        chdir: /opt/minio
+        cmd: docker-compose up -d
+
+- name: install redis
+  block:
+    - name: tar redis.tar.gz
+      unarchive:
+        src: redis.tar.gz
+        dest: "{{ path }}"  
+        creates: "{{ path }}/redis"
+    - name: Create soft connection for redis
+      file:
+        path: /opt/redis
+        state: link
+        src: "{{ path }}/redis"
+      when: path != "/opt"
+    - name: start redis
+      shell:
+        chdir: /opt/redis
+        cmd: docker-compose up -d
+
+- name: install idmonitor
+  block:
+    - name: mkdir log-chart-job
+      file:
+        path: "{{ path }}/log-chart-job"
+        state: directory
+    - name: Create soft connection for idmonitor
+      file:
+        path: /opt/log-chart-job
+        state: link
+        src: "{{ path }}/log-chart-job"
+      when: path != "/opt"
+    - name: copy docker-compose.yml
+      template:
+        src: idmonitor_docker-compose.yml.j2
+        dest: /opt/log-chart-job/docker-compose.yml
+        backup: yes
+      notify: restart idmonitor

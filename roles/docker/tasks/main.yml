@@ -1,0 +1,4 @@
+---
+# tasks file for docker
+- name: install docker docker-compose and lgoin docker
+  import_tasks: docker.yml

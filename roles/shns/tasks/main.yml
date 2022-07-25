@@ -1,0 +1,21 @@
+---
+# tasks file for shns
+- name: set shsrs_license
+  shell: echo {{hostvars[shsrs_host].shsrs_license.stdout_lines[1]}}
+  register: shsrs_license
+
+- name: test shsrs_license
+  debug:
+    var: shsrs_license
+
+- name: install shns
+  import_tasks: shns.yml
+
+- name: copy shns_conf
+  import_tasks: conf.yml
+
+- name: start service
+  import_tasks: service.yml
+
+- name: make license
+  import_tasks: license.yml

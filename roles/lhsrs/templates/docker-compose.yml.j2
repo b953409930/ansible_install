@@ -1,0 +1,59 @@
+version: '3'
+services:
+  idhub-idis:
+    container_name: idhub-idis
+    image: 'xxxxxxx/idhub/idhub-go:1.3.0'
+    restart: always
+    logging:
+      driver: 'none'
+    network_mode: host
+    privileged: true
+#    ports:
+#      - 2641:2641
+#      - 8080:8080
+    environment:
+      - teleinfo.idhub.enforce.caseSensitive=false
+      - teleinfo.idhub.server.tcpPort={% if inventory_hostname == lhsrs1_host  -%}
+{{ lhsrs1_server_port }}
+{%  else %}
+{{ lhsrs2_server_port }}
+{% endif %}
+
+      - teleinfo.idhub.server.httpPort={% if inventory_hostname == lhsrs1_host  -%}
+{{ lhsrs1_proxy_port }}
+{%  else %}
+{{ lhsrs2_proxy_port }}
+{% endif %}
+
+      - teleinfo.idhub.auth.enable=false
+      - teleinfo.idhub.enforce.type=idis
+      - teleinfo.idhub.enforce.idis.mongo=mongodb://{{ mongo_db_user }}:{{ mongo_db_password }}@{{ mongo_db_url }}:{{ mongo_db_port }}/{{ db_name }}?authSource=admin&maxPoolSize=500&minPoolSize=300
+      # 日志等级 DEBUG > INFO > ERROR
+      - logger.level=error
+      - teleinfo.idhub.enforce.logger.opLog=true
+      - teleinfo.idhub.enforce.logger.masterLog=true
+    volumes:
+      - ./logs/idhub-idis:/var/www/idhub/logs
+      - ./license.yaml:/var/www/idhub/config/license.yaml
+  idhub-log:
+    container_name: idhub-log
+    image: 'xxxxxxx/idhub/idhub-log:1.3.0'
+    restart: always
+    network_mode: host
+    logging:
+      driver: 'none'
+    environment:
+      - server.address=:8199
+      - teleinfo.enforce.type=client
+      # minio的API访问地址
+      - teleinfo.s3.endpoint={{ minio_host }}:9000
+      - teleinfo.s3.accessKey=teleinfo
+      - teleinfo.s3.secretKey=teleinfo
+      - teleinfo.s3.bucketName=logfile
+      - teleinfo.client.entry.oplog=/var/www/idhub-log/sync/oplog
+      - teleinfo.client.entry.masterlog=/var/www/idhub-log/sync/masterlog
+      - logger.level=error
+    volumes:
+      - ./logs/idhub-log:/var/www/idhub-log/logs
+      - ./logs/idhub-idis/oplog:/var/www/idhub-log/sync/oplog
+      - ./logs/idhub-idis/masterlog:/var/www/idhub-log/sync/masterlog

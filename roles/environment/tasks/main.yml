@@ -1,0 +1,71 @@
+---
+# tasks file for environment
+- name: set hostname
+  vars:
+    hostnames:
+      - host: "{{ lhsrs1_host }}"
+        name: lhsrs1
+      - host: "{{ lhsrs2_host }}"
+        name: lhsrs2
+      - host: "{{ snms_host }}"
+        name: snms
+      - host: "{{ idmonitor_host }}"
+        name: idmonitor
+      - host: "{{ shsrs_host }}"
+        name: shsrs1
+      - host: "{{ shns_host }}"
+        name: shns
+      - host: "{{ es1_host }}"
+        name: es1
+      - host: "{{ es2_host }}"
+        name: es2
+      - host: "{{ es3_host }}"
+        name: es3
+  hostname:
+    name: "{{item.name}}"
+  when: item.host == inventory_hostname
+  loop: "{{ hostnames }}"
+
+- name: add DNS for each 
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ item }} {{ hostvars[item].ansible_hostname }}"
+  when: item != inventory_hostname
+  loop: "{{ play_hosts }}"
+
+- name: make yum_repo
+  block:
+    - name: backup origin yum repos
+      shell:
+        cmd: "mkdir ansible_bak; mv *.repo  ansible_bak"
+        chdir: /etc/yum.repos.d
+        creates: /etc/yum.repos.d/ansible_bak
+    - name: add os repo and epel repo
+      copy:
+        src: "{{ item }}"
+        dest: /etc/yum.repos.d/
+      loop:
+        - CentOS-Base.repo
+        - docker-ce.repo
+        - epel.repo
+      notify: clean old yum cache
+
+- name: set firewalld
+  shell: systemctl stop firewalld && systemctl disable firewalld
+  ignore_errors: true
+
+- name: set selinux
+  block:
+  - name: modify selinux
+    lineinfile:
+      path: /etc/selinux/config
+      regexp: 'SELINUX='
+      line: SELINUX=disabled
+    notify: setenforce
+
+- name: Set system parameters
+  import_tasks: limit.yml
+
+- name: Set time sync
+  import_tasks: sync_time.yml
+

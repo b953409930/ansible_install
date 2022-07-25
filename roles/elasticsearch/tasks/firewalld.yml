@@ -1,0 +1,14 @@
+---
+# 
+- name: set firewalld
+  shell: systemctl stop firewalld && systemctl disable firewalld
+  ignore_errors: true
+
+- name: set selinux
+  block:
+  - name: modify selinux
+    lineinfile:
+      path: /etc/selinux/config
+      regexp: 'SELINUX='
+      line: SELINUX=disabled
+    notify: setenforce

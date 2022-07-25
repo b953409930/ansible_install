@@ -1,0 +1,45 @@
+---
+# tasks file for docker docker_compose docker_login
+
+- name: install docker-ce docker-compose
+  yum:
+    name: "{{ item }}"
+    state: installed
+  loop:
+    - docker-ce
+    - docker-compose
+    - python-pip
+ 
+- name: mkdir docker dir
+  file:
+    path: /etc/docker
+    state: directory
+
+- name: set docker path and start docker
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+  notify: restart docker
+
+- meta: flush_handlers
+
+- name: docker login qingyun
+  shell:
+    cmd: docker login -uxxxx -pxxxxxx  xxxxxx
+
+- name: docker login harbor
+  block:
+    - name: tar docker cert
+      unarchive:
+        src: certs.d.tar.gz
+        dest: /etc/docker
+        creates: /etc/docker/certs.d/
+
+    - name: add harbor dns
+      lineinfile:
+        path: /etc/hosts
+        line: xxxxx harbor.teleinfo.cn
+
+- name: docker login harbor
+  shell:
+    cmd: docker login -uxxx -pxxxx  xxxxx

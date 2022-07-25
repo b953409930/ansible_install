@@ -1,0 +1,8 @@
+---
+# tasks file for idmonitor
+- name: install docker docker-compose docker_login
+  import_role: 
+    name: docker
+
+- name: install and start idmoniotr
+  import_tasks: install.yml

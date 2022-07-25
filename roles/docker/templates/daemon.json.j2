@@ -1,0 +1,15 @@
+{
+  "graph": "{{ path }}/docker",
+  "insecure-registries":["registry.xxxx.cn","registry.xxx.cn:8443"],
+  "registry-mirrors": [
+      "http://hub-mirror.c.163.com",
+      "https://docker.mirrors.ustc.edu.cn"
+    ],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "2000m",
+    "max-file": "5",
+    "labels": "production_status",
+    "env": "os,customer"
+  }
+}

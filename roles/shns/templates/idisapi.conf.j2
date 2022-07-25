@@ -1,0 +1,58 @@
+[common]
+#日志级别 FATAL=0,ERROR=1,WARN=2,INFO=3,DEBUG=4,TRACE=5
+sys_log_level = {{ sys_log_level }}
+#0 split by day, 1 split by size
+log_type = 0 
+##仅当log_type = 1，log_size 和 log_max_index才生效
+##unit : MB
+log_size = 500 
+log_max_index = 10
+#0 no core,1 generate core
+core_file_flag = 1
+thread_num=4
+#data_center_switch value 1代表开启数据中心，0代表关闭
+data_center_switch = 0 
+
+[server]
+server_port=56532
+#服务数量
+#server_num=4
+#服务列表
+url_users = /users
+url_prefixs = /prefixs
+url_user_prefix_rels = /user-prefix-rel
+url_handle_value_types = /handle-value-types
+url_handles = /handles
+url_traffic_record = /traffic-record
+url_data_center = /data-center
+
+#基础api的数据库配置
+[db]
+db_server_url = {{ mongo_db_url }}
+db_server_port = {{ mongo_db_port }}
+db_server_user = {{ mongo_db_user }}
+db_server_password = {{ mongo_db_password }}
+db_name = {{ db_name }}
+#idis-api基础api开关 1 代表开启，0代表关闭	
+api_switch = 1 
+#设置ipv4的开关 1仅设置ipv4 0代表同时支持
+only_ipv4 = 0
+#//系统数据库类型 1代表mysql，2代表用的mongodb
+server_type = 2
+#是否开启业务流量功能 开启的话默认只使用mongdb,1开启 0关闭
+traffic_record_switch = {{ traffic_record_switch }}
+
+#流量统计使用的mongdb库
+[db_record]
+db_record_url = {{ mongo_db_url }}
+db_record_port = {{ mongo_db_port }}
+db_record_user = {{ mongo_db_user }}
+db_record_password = {{ mongo_db_password }}
+db_record_name = TelCount
+
+#数据中心数据库配置
+[db_data_center]
+db_center_url = 127.0.0.1
+db_center_port = 27017
+db_center_user = root
+db_center_password = 123456

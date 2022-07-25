@@ -1,0 +1,8 @@
+---
+# tasks file for snms
+- name: install docker
+  import_role:
+     name: docker
+
+- name: install snms
+  import_tasks: install.yml

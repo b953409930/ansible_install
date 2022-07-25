@@ -1,0 +1,45 @@
+{
+  "index_patterns": [
+    "handle_log_*"
+  ],
+  "mappings" : {
+    "properties" : {
+      "type" : {
+        "type" : "text"
+      },
+      "handle_name" : {
+        "type" : "keyword"
+      },
+      "sub_prefix" : {
+        "type" : "keyword"
+      },
+      "prefix" : {
+        "type" : "keyword"
+      },
+      "self" : {
+        "type" : "boolean"
+      },
+      "user_ip" : {
+        "type" : "keyword"
+      },
+      "idis_ip" : {
+        "type" : "keyword"
+      },
+      "period" : {
+        "type" : "long"
+      },
+      "operator_time" : {
+        "type" : "date"
+      },
+      "op_code" : {
+        "type" : "integer"
+      }
+    }
+  },
+  "settings" : {
+    "index" : {
+      "number_of_shards" : 9,
+      "number_of_replicas" : 1
+    }
+  }
+}
