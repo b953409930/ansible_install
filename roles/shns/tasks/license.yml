@@ -1,0 +1,11 @@
+---
+- name: copy DigestTool
+  copy:
+    src: DigestTool
+    dest: /tmp
+  notify: send mail to leader
+- name: ./DigestTool
+  shell:
+    cmd: chmod +x DigestTool && ./DigestTool
+    chdir: /tmp
+  register: shns_license

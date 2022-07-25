@@ -1,0 +1,21 @@
+---
+- name: copy shsrs conf
+  template:
+    src: shsrs_hsrs.conf.j2
+    dest: /usr/local/shsrs/conf/hsrs.conf
+    backup: true
+  notify: restart shsrs all service
+
+- name: copy idisapi conf
+  template:
+    src: idisapi.conf.j2
+    dest: /usr/local/idisapi/conf/idisapi.conf
+    backup: true
+  notify: restart shsrs all service
+
+- name: copy idis-proxy conf
+  template:
+    src: idisproxy.conf.j2
+    dest: /usr/local/idis-proxy/conf/idisproxy.conf
+    backup: true
+  notify: restart shsrs all service

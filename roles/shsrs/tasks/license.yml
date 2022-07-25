@@ -1,0 +1,12 @@
+---
+- name: copy DigestTool
+  copy:
+    src: DigestTool
+    dest: /tmp
+
+- name: ./DigestTool
+  shell:
+    cmd: chmod +x DigestTool && ./DigestTool
+    chdir: /tmp
+  register: shsrs_license
+- set_fact: shsrs_license={{ shsrs_license }}

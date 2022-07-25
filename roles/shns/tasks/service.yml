@@ -1,0 +1,16 @@
+---
+- name: Set startup and restart service
+  block:
+    - name: copy script
+      copy:
+        src: "{{ item }}"
+        dest: /tmp
+      loop:
+        - init_C.sh
+        - initCheckIdis.sh
+    - name: sh script
+      shell:
+        cmd: sh init_C.sh
+        chdir: /tmp
+        creates: /opt/script
+      ignore_errors: yes

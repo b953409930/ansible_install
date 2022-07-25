@@ -1,0 +1,14 @@
+---
+- name: install rabbitmq
+  block:
+    - name: tar rabbitmq.tar.gz
+      unarchive:
+        src: rabbitmq.tar.gz
+        dest: "{{ path }}"
+        creates: "/opt/rabbitmq_up"
+    - name: Create soft connection for rabbitmq
+      file:
+        path: /opt/rabbitmq_up
+        state: link
+        src: "{{ path }}/rabbitmq_up"
+      when: path != "/opt"

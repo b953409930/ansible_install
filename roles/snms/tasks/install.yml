@@ -1,0 +1,33 @@
+---
+
+- name: install snms
+  block:
+    - name: mkdir snms
+      file:
+        state: directory
+        path: "{{ path }}/snms"
+    - name: tar snms.tar.gz
+      unarchive:
+        src: snms.tar.gz
+        dest: "{{ path }}/snms"
+        creates: "{{ path }}/snms"
+    - name: Create soft connection for snms
+      file:
+        path: /opt/snms
+        state: link
+        src: "{{ path }}/snms"
+      when: path != "/opt"
+    - name: copy docker-compose.yml to snms
+      template:
+        src: snms_docker-compose.yml.j2
+        dest: /opt/snms/docker-compose.yml
+        backup: yes
+      notify: restart snms
+
+- name: configure nginx
+  block:
+    - name: copy nginx.conf
+      template:
+        src: snms.conf.j2
+        dest: /opt/snms/conf/nginx/conf.d/snms.conf
+      notify: restart nginx

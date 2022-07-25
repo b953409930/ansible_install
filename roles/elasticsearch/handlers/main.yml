@@ -1,0 +1,18 @@
+---
+# handlers file for elasticsearch
+- name: restart elasticsearch
+  shell: sh /tmp/es_restart.sh
+
+- name: setenforce
+  shell:
+    cmd: setenforce 0
+  ignore_errors: true
+
+- name: sysctl
+  shell:
+    cmd: sysctl -p
+  ignore_errors: true
+
+- name: reboot
+  reboot:
+    reboot_timeout: 3600

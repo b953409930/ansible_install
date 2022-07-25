@@ -1,0 +1,15 @@
+---
+# sync time
+- name: time sync    #同步时间，配置计划任务
+  cron:
+    name: "check time"
+    state: present
+    hour: "*/1"
+    job: "/usr/sbin/ntpdate cn.pool.ntp.org"
+    
+- name: time zone sync    #同步时区
+  copy:
+    src: /usr/share/zoneinfo/Asia/Shanghai
+    dest: /etc/localtime
+    force: no
+    backup: yes

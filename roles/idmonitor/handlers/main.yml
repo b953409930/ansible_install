@@ -1,0 +1,14 @@
+---
+# handlers file for idmonitor
+- name: restart docker
+  systemd:
+    name: docker
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+
+- name: restart idmonitor
+  shell:
+    chdir: /opt/log-chart-job
+    cmd: docker-compose down&&docker-compose up -d
+  ignore_errors: yes

@@ -1,0 +1,15 @@
+---
+# handlers file for shsrs
+- name: set script
+  shell:
+    cmd: sh init_B.sh
+    chdir: /tmp
+  ignore_errors: yes
+  listen: restart shsrs all service
+
+- name: start service
+  shell:
+    cmd: sh autostart.sh &>/dev/null
+    chdir: /opt/script
+  ignore_errors: yes
+  listen: restart shsrs all service

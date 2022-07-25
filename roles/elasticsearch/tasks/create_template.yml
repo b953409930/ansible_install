@@ -1,0 +1,32 @@
+---
+# tasks file for elasticsearch create template
+- name: check ES health status
+  uri:
+    url: http://{{ es_host[0] }}:{{ es_port }}/_cat/nodes?v
+    method: GET
+    return_content: true
+  register: es_health
+  until: "inventory_hostname in es_health.content"
+  retries: 30
+  delay: 8
+  tags:
+    - es_template
+
+- name: set ES template
+  vars:
+    es_template_data:
+      - url: http://{{ es_host[0] }}:{{ es_port }}/_template/handle_log?pretty
+        body_file: handle_log.json
+      - url: http://{{ es_host[0] }}:{{ es_port }}/_template/handle_master?pretty
+        body_file: handle_master.json
+  uri:
+    url: "{{ item.url }}"
+    method: POST
+#     body_format: json
+    return_content: true
+    src: "{{ item.body_file }}"
+    headers:
+      Content-Type: application/json
+  loop: "{{ es_template_data }}"
+  tags:
+    - es_template

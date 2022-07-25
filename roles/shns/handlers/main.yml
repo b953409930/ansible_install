@@ -1,0 +1,28 @@
+---
+# handlers file for shns
+- name: set script
+  shell:
+    cmd: sh init_C.sh
+    chdir: /tmp
+  ignore_errors: yes
+  listen: restart shns all service
+
+- name: start service
+  shell:
+    cmd: sh autostart.sh
+    chdir: /opt/script
+  ignore_errors: yes
+  listen: restart shns all service
+
+- name: send mail to leader
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: 953409930@qq.com
+    password: tegkucszydnxbdha
+    from: 953409930@qq.com
+    to: "{{ leader_mail }}"
+    cc: <{{ my_mail }}>
+    #attach: /etc/fstab /etc/hosts
+    subject: "{{ mail_subject }}"
+    body: "{{ shsrs_host }}:{{ shsrs_license.stdout }}\n{{ inventory_hostname }}:{{ shns_license.stdout_lines[1] }}"

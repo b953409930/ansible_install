@@ -1,0 +1,78 @@
+{
+  "index_patterns": [
+    "handle_master_*"
+  ],
+  "mappings": {
+    "properties": {
+      "sub_prefix": {
+        "type": "keyword"
+      },
+      "prefix": {
+        "type": "keyword"
+      },
+      "handle_name": {
+        "type": "keyword"
+      },
+      "op_code": {
+        "type": "integer"
+      },
+      "operator_time": {
+        "type": "date"
+      },
+      "ref_meta_data": {
+        "type": "text"
+      },
+      "id_code": {
+        "type": "text"
+      },
+      "create_time": {
+        "type": "text"
+      },
+      "product_type": {
+        "type": "text"
+      },
+      "product_brand": {
+        "type": "text"
+      },
+      "product_def_name": {
+        "type": "text"
+      },
+      "manu_full_name": {
+        "type": "text"
+      },
+      "prod_time": {
+        "type": "text"
+      },
+      "prod_exp_date": {
+        "type": "text"
+      },
+      "terminal_type": {
+        "type": "text"
+      },
+      "subject": {
+        "type": "text"
+      },
+      "use_for": {
+        "type": "text"
+      },
+      "ser_or_imei": {
+        "type": "text"
+      },
+      "license_no": {
+        "type": "text"
+      },
+      "license_mark": {
+        "type": "text"
+      },
+      "license_sign": {
+        "type": "text"
+      }
+    }
+  },
+  "settings": {
+    "index": {
+      "number_of_replicas": 1,
+      "number_of_shards": 9
+    }
+  }
+}

@@ -1,0 +1,86 @@
+---
+- name: configure ssh connection
+  hosts: all
+  gather_facts: false
+  connection: local
+  tasks:
+    - name: test ~/.ssh/*
+      shell: |
+        if ! [ -f ~/.ssh/id_rsa ];then ssh-keygen -f /root/.ssh/id_rsa -N '';fi
+    - name: configure ssh connection
+      shell: |
+        ssh-keyscan {{inventory_hostname}} >>~/.ssh/known_hosts
+        sshpass -p '{{ ansible_password }}' ssh-copy-id -p {{ ansible_port }} {{ ansible_user }}@{{inventory_hostname}}
+  tags:
+    - ssh
+
+- name: Initialize environment
+  hosts: snms:lhsrs
+  gather_facts: false
+  tags:
+    - environment
+  roles:
+    - environment
+
+- name: install ES
+  hosts: elasticsearch
+  tags:
+    - elasticsearch
+  roles: 
+    - elasticsearch
+
+- name: install shsrs
+  hosts: shsrs
+  tags:
+    - shsrs
+    - all
+  roles:
+    - shsrs
+
+- name: install shns
+  hosts: shns
+  tags:
+    - all
+    - shns
+  roles:
+    - shns
+
+- name: install idmonitor
+  hosts: idmonitor
+  gather_facts: false
+  tags:
+    - idmonitor
+    - all
+  roles: 
+    - docker
+  tasks:
+    - name: install snms
+      vars:
+        epp_priv_pem: "{{ lookup('file', 'epp.conf') }}"
+      import_role:
+        name: idmonitor
+
+- name: install lhsrs
+  hosts: lhsrs
+  gather_facts: false
+  tags:
+    - all
+    - lhsrs
+  roles: 
+    - docker
+    - lhsrs
+
+- name: install snms
+  hosts: snms
+  gather_facts: false
+  tags:
+    - all
+    - snms
+  roles:
+    - docker
+  tasks:
+    - name: install snms
+      vars:
+        epp_priv_pem: "{{ lookup('file', 'epp.conf') }}"
+      import_role:
+        name: snms

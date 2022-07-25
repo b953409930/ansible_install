@@ -1,0 +1,147 @@
+version: '3'
+services: 
+    snms-server: 
+        container_name: snms-server
+        image: 'xxxxxx/snms/snms-server:{{ snms_image_version }}'
+        ports: 
+            - 8101:8100
+        restart: always
+        logging:
+          driver: "none"
+        environment:
+            # 单人登录模式
+            SESSION_SINGLE: 'true'
+            # 日志级别
+            LOG_LEVEL: 'INFO'
+            # 定时任务
+            SCHEDULING_ENABLE: 'true'
+            # 递归解析URL
+            HANDLE_RESOLVE_URL: http://sh.resolve.citln.cn:8081
+            # ID-CLIENT-SDK配置
+            IDCLIENT_MAX-CONNECTIONS-PER-SERVER: 200
+            IDCLIENT_PROMISE_TIMEOUT: 10
+
+            # mysql
+            MYSQL_URL: jdbc:mysql://{{ mysql_db_url }}:{{ mysql_db_port }}/{{ mysql_db_snms_name }}?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+            MYSQL_USERNAME: {{ mysql_db_user }}
+            MYSQL_PASSWORD: {{ mysql_db_password }}
+            # 二级IDIS 代理
+            IDIS_SECOND_PROXY_URL: {{ shsrs_host }}:{{ shsrs_proxy_port }}
+            # EPP 配置
+            EPP_APPURL: https://bms{{ epp_appurl }}.citln.cn/api/epp
+            EPP_APPID: {{ epp_appid }}
+            EPP_APPKEY: |-
+{% set split_epp_priv_pem = epp_priv_pem.splitlines() %}
+{% for item in split_epp_priv_pem %}
+                {{ item }}
+{% endfor %}
+            EPP_SHRPREFIX: '{{ epp_qz }}'
+            EPP_SHRPREFIX_HIST: ''
+            SELF_ENT_PREFIX: '{{ epp_qz }}.000000'
+            # 首页LOGO配置
+            HOME_TITLE: 二级节点业务管理系统
+            HOME_TEXT: 工业互联网标识解析|二级节点
+            HOME_ICP: 软件和信息技术服务业|业务管理系统（V1.3.9）|指导单位:中国信息通信研究院|<a href='京ICP备:12003601号http://beian.miit.gov.cn'>京ICP备:12003601号</href>
+            # 超级管理员密码
+            PLATFORM_ROOT_PASSWORD: e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7
+            # simple,redis
+            CACHE_TYPE: simple
+            # hash_map,redis
+            SESSION_TYPE: hash_map
+            spring.redis.host: {{ redis_host }}
+            spring.redis.password: {{ redis_password }}
+            spring.redis.port: 6379
+            # simple, fdfs ,s3
+            FILE_MANAGER: simple
+            FDFS_TRACKER_LIST: 192.168.150.201:22122
+            # 资源路径,当FILE_MANAGER=simple时必须
+            RESOURCE_PATH: /opt/snms/resource
+            S3_ACCESS_KEY: teleinfo
+            S3_SECRET_KEY: teleinfo
+            S3_SERVICE_ENDPOINT: http://{{ idmonitor_host }}:9000
+            S3_SIGN_REGION: ''
+            S3_BUCKET_NAME: snms
+            # 登录验证码是否固定,配置为true时固定为0000
+            CAPTCHA_FIXED: 'false'
+            # referer校验
+            REFERER_REQUIRED: 'false'
+            REFERER_IP: 127.0.0.1,localhost,192.168.0.19,139.198.126.227
+            # id-pointer-chart服务地址
+            IDPOINT_API_URL: {{ minio_host }}:56566
+            # 关闭Knife4j接口文档
+            KNIFE4J_PRODUCTION: 'true'
+            # 最大连接数
+            MAX-CONNECTIONS: 10000
+            # 密码有效期, 单位天, 值为0时代表密码永久有效
+            PASSWORD_LIFE_TIME: 30
+            # Session过期时间
+            SESSION-TIMEOUT: 12000
+            # XSS过滤
+            XSS_ENABLED: 'false'
+            # API登录失败锁定账号
+            ACCOUNT_LOCK_FOR_API_LOGIN: 'false'
+            # 单人登录模式
+            TOKEN_SINGLE: 'false'
+            # 模板配置
+            TEMPLATE_UPDATE_ENABLE: 'false'
+            SECOND_TEMPLATE_ENABLE: 'false'
+            # 核验参数配置
+            VERIFY_ACCESS_KEY: 613d6dbe6236d97fca026dece49f27026767
+            VERIFY_ACCESS_SERCET: efa086d8c5e0a8bdf9ab41ef026ef1b0
+            VERIFY_KEY_VERSION: RSA2048
+            VERIFY_AUTH_TWO_ELEMENTS_URL: http://verify.idconsensus.cn:8000/services/v1/auth-two-elements
+            VERIFY_ID_OCR_SERVICE_URL: http://verify.idconsensus.cn:8000/services/v1/id-ocr-service
+            VERIFY_ORG_VERIFICATION_QUERY_SERVICE_URL: http://verify.idconsensus.cn:8000/services/v1/org-verification-query-service
+            VERIFY_CODES_OCR_SERVICE_URL: http://verify.idconsensus.cn:8000/services/v1/cods-ocr-service
+            VERIFY_SERVER_PUBLIC_KEY: |
+                -----BEGIN PUBLIC KEY-----
+                MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvctlvFNUz1yc2/wtPsXoYDhGWcnO24Rf
+                ZvPkuf8DWUrWexaPIwuyQdUlL+m0tz79bXFxuE8H3Nyo7txMX2/UX1RY5F3ngUf6nMfq1K3AFxa/
+                77rGz0C9evD9AZc1i2Bdg14kyb1nRvXpn5wp/nJ/5jGNXkBoHkgU25u4ESTiFanFnoYdSNV/Swhb
+                BjLxuiFtjVm7eJfUoalcWUUHnBTfd8Ez0PaLbVVouw+A4DRNQORQJNjLoJPPR/A08gVN9mfkV2fi
+                N1SiqVYxIqUdcJpqRZtjVdcjRPmqX/8ncWsmpOUw4GvaCBeEOSrkOnU+HkyAHA56KvVREydjNO7a
+                5ttvewIDAQAB
+                -----END PUBLIC KEY-----
+            VERIFY_SELF_PRIVATE_KEY: |
+                -----BEGIN PRIVATE KEY-----
+                MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCssD5kQPE720DxdUl+A/JGYcq7
+                41uFMnkpkkUSgadTwQErJRXmQSicWpTA3QMX5sKq0J+tjPm8AYLdEa5BinMy/dXwsDuLjGjwouaE
+                QCiNcjcWQiXmAYK9huwIqdAGP8u7HIY+uS4CcMt++jNuE1Ug0bE6UsCCP9/FntppntzQ8c0N6O9d
+                SEW6rlng0CLTfpb8I6FgmNFlgETM81bEGKP3iASJ6pBaUBvQ63q32HEgrT8V5BVfV/xhkwF42W+B
+                oB90ai14Q7YBiL4mKJQOpTt+X14JZTsJKXpdtIMWnCnh4M9jcGmatU0C1HqEXUqt3tm7ZlFWI3Dm
+                argI5roFHgtZAgMBAAECggEAALPa5CKVH4rax+AsP2UyodzagGVzjqUz7GULElWsmjxuIvw0UVTe
+                M6CLTz6NbDClBtTpsWTuPnHIOGpKgwz03cTjCNxj2F73xN/Q9FYs1R5reXdtT+ErHYdWg/MaRK6e
+                2mlVCF7XE2CGKrFnjFNxwnUqc922putzgcrt8/SlyIJw0e/ub8+Ja3QcQpYzchqLrEHFVjRIJTDG
+                bS66R98H26+3Uc0EFCgcSgcrByjosOelcVRO+Dvn5vCi62Hya6jSRAFNdBUgXcuGrt5sq8OsK2yG
+                BAlf5LVMBG0ZxMUWES7EO67KevYdTJQRz5oH45djz+rNQEtu9Ykh7uoJA7fv+QKBgQDkRaKu5sMs
+                RK/6rvgbixCP82UhB9pUgeppH+sZuzUnI0/v9HAgamz9toPsy8SDNpHShztpb/KzQpgogGp4Fg+u
+                hP10bBqwcwM6ZJr+45FyvrSw5l/d6XXholOL8zueTMT740q+I5ztq5XRPwpkmnisWEqF/vkVAk/i
+                J3RKhGfj5wKBgQDBqi1rzD5gHaLKdSqVygyHrxrDZ96XN1pEytKzR2U3Jz9V1E2b3cW19S/F3eMY
+                +WIwL+pbPRyg9YSfoShHn96sUi+imDZVi7yFgOHl2E1wpg2wI1YlZ2b6SAJZ+WvRmNC8Bp1pWawg
+                YrS91i3SwnjDMwUe+G4wnoWUXysOlSyuvwKBgQCEZk9hmr8BYiWgBPQrJZHJrKavbdqYwXGw366B
+                EjBWLwkiaGjQpGnrDn2eTuIAKRqTPZScJy5iAvI2K6WVWVZnJwPLDxi71zm8GLY9uMiYATzUjgp0
+                sACLipdiyQV/X4+xebfUaNuQjsEqyKHCkEYF0IAJEEZwhRLIXZH51qpbaQKBgHRE6TQY0TH/WObX
+                5RM81Lz5QcYjLB35G3bFli4QJRIxu/KZnWaAhNyzMVVH27n4rxxjB/5y+Ccif9ceeAJYVuV6CiNB
+                4w0E8c/tCrJlZEjHSNyAuo2GQOruJItEFZkmd9sK1aKUNaTT3dNDLQulub7neKGZYP5LjcMAR+df
+                ZA4dAoGADvdGIJHNbMlPbbMLy290MJEDV/aFN2Nznk4bOHpDIDFLBUwgW6AJweuPjqWbAhJqlZ+3
+                l/Gw140z9FAYTH6Ve6DkSZXsFUAa4V6Jno5ybHkk5CFhbTr/uKZIkHJzF+ktzum99lAM6cM9D7Fk
+                E+LaiLaJcFuBG6/eDwUVo5r6NaQ=
+                -----END PRIVATE KEY-----
+        volumes: 
+            - ./logs:/target/logs
+            - ./resource:/opt/snms/resource
+        network_mode: host
+    snms-vue: 
+        container_name: snms-vue
+        image: 'xxxxxx/snms/snms-vue:{{ snms_image_version }}'
+        #ports: 
+        #    - 8089:80
+        restart: always
+        logging:
+          driver: "none"
+        volumes: 
+            - ./nginx-logs:/var/log/nginx
+            - ./conf/nginx/conf.d:/etc/nginx/conf.d
+            - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf
+        network_mode: host
+

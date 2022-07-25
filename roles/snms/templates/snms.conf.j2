@@ -1,0 +1,141 @@
+#默认server,两个server中的监听端口需一致 
+server { 
+  listen 80 default; 
+  server_name _; 
+
+  location / { 
+    return 403; 
+  } 
+     
+  #错误页 
+  error_page 400 403 404 405 408 410 412 413 414 415 /404.html; 
+
+  location = /404.html { 
+    root /usr/share/nginx/html/snms; 
+  } 
+
+}
+
+upstream  snms-server {
+  server    127.0.0.1:8100;
+  keepalive 200;
+}
+
+server {
+
+  listen              {{ snms_nginx_port }};
+ 
+  #客户要求使用ipv6时配置
+  #listen [::]:8089;
+{% macro discovery(loop,sep=' ',deli='') -%}
+{{ sep if not loop.last else deli }}
+{%- endmacro %}
+
+  server_name {%for item in snms_host_list%}
+  {{ item }}{{ discovery(loop) }}
+  {%- endfor %};
+
+  root /usr/share/nginx/html/snms;
+
+  #隐藏版本号
+  server_tokens off;
+
+  #该页面可以在相同域名页面的 frame 中展示
+  add_header X-Frame-Options SAMEORIGIN always;
+
+  #只允许POST DELETE PUT GET方法
+  if ($request_method !~* GET|POST|DELETE|PUT) {
+    return 403;
+  }
+  
+  # 长连接配置
+  proxy_http_version 1.1;
+  proxy_set_header Connection "";
+
+  #错误页
+  error_page 400 403 404 405 408 410 412 414 415 /404.html;
+  error_page 413 /413;      
+
+  #上报服务的地址,xxl-job-admin
+  location = /xxl-job-admin/toLogin {
+    proxy_pass http://{{ idmonitor_host }}:8080/xxl-job-admin/toLogin;
+    proxy_connect_timeout 300s;
+    proxy_send_timeout 300s;
+    proxy_read_timeout 300s;
+  }
+
+  location ^~ /xxl-job-admin {
+    proxy_pass http://{{ idmonitor_host }}:8080/xxl-job-admin;
+    proxy_connect_timeout 300s;
+    proxy_send_timeout 300s;
+    proxy_read_timeout 300s;
+  }
+
+  location = /404.html {
+    root /usr/share/nginx/html/snms;
+  }
+  
+  location = /413 {
+    default_type application/json;
+    return 200 '{"status": -2, "message": "Request Entity Too Large", "data": null}';
+  }        
+
+  location ~ (.*)/static/ {
+    root  /usr/share/nginx/html;
+  }
+
+  # api的配置
+  location ^~ /api {
+    # 需要修改为snms-web项目的访问路径
+    proxy_pass http://snms-server/;
+  }
+  
+  # 文件上传API
+  location ^~ /snms/api/file/upload {
+    proxy_pass http://snms-server;
+    client_max_body_size 6M;
+  } 
+ 
+  location ^~ /api/file {
+    # 增大文件大小限制
+    proxy_pass http://snms-server/file/;
+    client_max_body_size 6M;
+  }
+              
+  location ^~ /snms/api {
+    # 需要修改为snms-web项目的访问路径
+    proxy_pass http://snms-server;
+  }
+
+  # 企业注册api的配置
+  location ^~/snms/api/ent/apply {
+    proxy_pass http://snms-server;
+    client_max_body_size 3M;
+  }
+
+  #批量注册标识接口配置
+  location ^~ /identityv2/data/batchCreate {
+    proxy_pass http://snms-server;
+    client_max_body_size 8M;
+  }
+
+  # 对外接口
+  location ^~ /identity/token {
+    proxy_pass http://snms-server;
+  }
+
+  location ^~ /identityv2 {
+    proxy_pass http://snms-server;
+  }
+
+  location / {
+      try_files $uri $uri/ @router;
+      index  index.html index.htm;
+  }
+ 
+  location @router {
+     rewrite ^.*$ /index.html last;
+  }
+  
+}
+

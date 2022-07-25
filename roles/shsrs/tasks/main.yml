@@ -1,0 +1,16 @@
+---
+# tasks file for shsrs
+- name: install rabbitmq
+  import_tasks: rabbitmq.yml
+
+- name: install shsrs
+  import_tasks: shsrs.yml
+
+- name: copy shsrs_conf
+  import_tasks: conf.yml
+
+- name: start shsrs
+  import_tasks: service.yml
+
+- name: make license
+  import_tasks: license.yml

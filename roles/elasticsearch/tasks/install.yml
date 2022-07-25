@@ -1,0 +1,45 @@
+---
+# 安装
+- name: create esuser
+  user:
+    name: esuser
+
+- name: create data dir
+  file:
+    path: "{{ path}}"
+    state: directory
+    owner: esuser
+    group: esuser
+
+- name: tar elasticsearch.tgz
+  unarchive:
+    src: elasticsearch.tgz
+    dest: "{{ path }}"
+
+- name: chown elasticsearch dir
+  file:
+    path: "{{ path }}/elasticsearch-{{ es_version }}"
+    state: directory
+    recurse: yes
+    owner: esuser
+    group: esuser
+
+- name: create link
+  file:
+    src: "{{ path }}/elasticsearch-{{ es_version }}"
+    path: /opt/els
+    state: link
+    owner: esuser
+    group: esuser
+
+- name: Set startup and self startup
+  blockinfile:
+    path: /etc/rc.d/rc.local
+    block: |
+      su esuser -c "/opt/els/bin/elasticsearch -d"
+    state: present
+
+- name: chmod +x rc.local
+  file:
+    path: /etc/rc.d/rc.local
+    mode: "755" 

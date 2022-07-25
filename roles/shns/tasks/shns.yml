@@ -1,0 +1,45 @@
+---
+- name: copy idisapi shns idis-proxy apr*
+  copy:
+    src: "{{ item }}"
+    dest: /tmp
+  loop:
+    - idisapi-1.3.0-0.x86_64.rpm
+    - idis-proxy-1.1.2-0.x86_64.rpm
+    - apr-1.4.8-3.el7_4.1.x86_64.rpm
+    - apr-util-1.5.2-6.el7.x86_64.rpm
+    - shns-1.2.4-7.x86_64.rpm
+
+- name: Move item to data directory
+  block:
+    - name: mv data and create link
+      file:
+        path: "{{ path }}/{{ item }}"
+        state: directory
+      loop:
+        - shns
+        - idisapi
+        - idis-proxy
+      when: path != "/usr/local"
+    - name: create shns idisapi idis-proxy link
+      file:
+        path: /usr/local/{{ item }}
+        src: "{{ path }}/{{ item }}"
+        state: link
+      loop:
+        - shns
+        - idisapi
+        - idis-proxy
+      when: path != "/usr/local"
+
+- name: install rpm
+  yum:
+    name: "/tmp/{{ item }}"
+    state: present
+  loop:
+    - idisapi-1.3.0-0.x86_64.rpm
+    - idis-proxy-1.1.2-0.x86_64.rpm
+    - apr-1.4.8-3.el7_4.1.x86_64.rpm
+    - apr-util-1.5.2-6.el7.x86_64.rpm
+    - shns-1.2.4-7.x86_64.rpm
+

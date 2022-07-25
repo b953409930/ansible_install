@@ -1,0 +1,8 @@
+---
+# tasks file for lhsrs
+- name: install docker docker-compose docker_login
+  import_role:
+    name: docker
+
+- name: install idhub
+  import_tasks: idhub.yml

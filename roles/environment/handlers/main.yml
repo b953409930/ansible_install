@@ -1,0 +1,15 @@
+---
+# handlers file for environment
+- name: clean old yum cache
+  yum:
+    autoremove: yes
+
+- name: setenforce
+  shell:
+    cmd: setenforce 0
+  ignore_errors: true
+
+- name: sysctl
+  shell:
+    cmd: sysctl -p
+  ignore_errors: true

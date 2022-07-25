@@ -1,0 +1,143 @@
+{# 定义一个宏用于迭代es主机配置,如果为循环最后一轮时输出deli定义的参数否则输出sep参数 #}
+{% macro esconf(loop,sep='',deli=";") -%}
+{{ sep if not loop.last else deli }}
+{%- endmacro %}
+version: '3'
+services:
+  idhub-log:
+    container_name: idhub-log
+    image: 'xxxxxxxxxxx/idhub/idhub-log:1.3.0'
+    restart: always
+    network_mode: host
+    environment:
+      - teleinfo.s3.back.enable=true
+      - teleinfo.server.rabbimtmq.consumer.enable=true
+      - server.address=:8199
+      - teleinfo.enforce.type=server
+      # minio配置
+      - teleinfo.s3.endpoint={{ minio_host }}:{{ minio_port }}
+      - teleinfo.s3.accessKey=teleinfo
+      - teleinfo.s3.secretKey=xxxxxx
+      - teleinfo.s3.bucketName=logfile
+      # rabbitmq配置
+      - teleinfo.server.rabbimtmq.url=amqp://teleinfo:teleinfo@{{ mq_host }}:{{ mq_port }}/
+      # redis配置
+      - teleinfo.server.redis.url={{ redis_host }}:{{ redis_port }}
+      - teleinfo.server.redis.password={{ redis_password }}
+      # ES集群配置
+      - teleinfo.server.elasticsearch.url={% for item in es_host %}
+http://{{ item }}:{{ es_port }}{{ esconf(loop,sep=",",deli="") }}
+{%- endfor %}
+
+      - teleinfo.server.elasticsearch.sniff=false
+      # 日志级别
+      - logger.level=info
+    volumes:
+      - ./logs:/var/www/idhub-log/logs
+
+  id-pointer-chart:
+    container_name: id-pointer-chart
+    image: xxxxxxxxxx/idmonitor/id-pointer-chart:latest
+    restart: always
+    network_mode: host
+    ports:
+      - 56566:56566
+    environment:
+      - server.port=56566
+      # mysql配置，库：snms
+      - spring.datasource.url=jdbc:mysql://{{ mysql_db_url }}:{{ mysql_db_port }}/{{ mysql_db_snms_name }}?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&tinyInt1isBit=false&serverTimezone=Asia/Shanghai
+      - spring.datasource.username={{ mysql_db_user }}
+      - spring.datasource.password={{ mysql_db_password }}
+      # redis配置
+      - spring.redis.host={{ redis_host }}
+      - spring.redis.port={{ redis_port }}
+      - spring.redis.password={{ redis_password }}
+    volumes:
+      - ./logs:/deploy/logs
+
+  xxl-job-admin:
+    container_name: xxl-job-admin
+    image: 'xuxueli/xxl-job-admin:2.3.0'
+    restart: always
+    network_mode: host
+    ports:
+      - 8080:8080
+    environment:
+      # mysql配置，库：xxl_job
+      - PARAMS=--spring.datasource.username={{ mysql_db_user }} --spring.datasource.password={{ mysql_db_password }}  --spring.datasource.url=jdbc:mysql://{{ mysql_db_url }}:{{ mysql_db_port }}/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai --xxl.job.accessToken=Teleinfo-88
+    volumes:
+      - ./logs/xxl-job:/data/applogs
+
+  id-pointer-job:
+    container_name: id-pointer-job
+    image: xxxxxxxxx/snms/id-pointer-job:1.3.9
+    environment: 
+# 日志的配置
+      - xxl.job.executor.logpath=/target/logs/xxl
+      - xxl.job.executor.logretentiondays=1
+      - logging.logback.rollingpolicy.total-size-cap=30GB
+      # snms 地址，需配置外网IP
+      - app.snms-url={{ snms_internet_host }}:{{ snms_nginx_port }}
+      # S3配置
+      - s3.access-key=teleinfo
+      - s3.secret-key=teleinfo
+      - s3.service-endpoint={{ minio_host }}:{{ minio_port }}
+      - teleinfo.s3.accessKey=teleinfo
+      # ES集群配置
+      - elasticsearch.ttl=30
+
+      # EPP配置，复制SNMS服务参数即可
+      - app.epp-client.app-id={{ epp_appid }}
+      - app.epp-client.app-url=https://bms{{ epp_appurl }}.citln.cn/api/epp
+      - |
+        app.epp-client.app-key=
+{% set split_epp_priv_pem = epp_priv_pem.splitlines() %}
+{% for item in split_epp_priv_pem %}
+                {{ item }}
+{% endfor %}
+
+      # 统计重报扫描配置
+      - app.stat-scan-days=180
+
+      - xxl.job.access-token=Teleinfo-88
+      # mysql配置，库：snms
+      - spring.datasource.url=jdbc:mysql://{{ mysql_db_url }}:{{ mysql_db_port }}/{{ mysql_db_snms_name }}?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&tinyInt1isBit=false&serverTimezone=Asia/Shanghai
+      - spring.datasource.username={{ mysql_db_user }}
+      - spring.datasource.password={{ mysql_db_password }}
+      # mongoDB配置，库：handle
+      - spring.data.mongodb.uri=mongodb://{{ mongo_db_user }}:{{ mongo_db_password }}@{{ mongo_db_url }}:{{ mongo_db_port }}/handle?authSource=admin
+      # redis配置
+      - spring.redis.host={{ redis_host }}
+      - spring.redis.port={{ redis_port }}
+      - spring.redis.password={{ redis_password }}
+      # 二级节点前缀列表,多个前缀用逗号分隔
+      - app.shr-prefix-list={{ epp_qz }}
+      # 二级节点注册服务IP
+      - app.shr-reg-ip={{ shsrs_host }}
+      # 二级节点注册服务端口
+      - app.shr-reg-port={{ shsrs_server_port }}
+      # 二级节点解析服务IP
+      - app.shr-resolve-ip={{ shns_host }}
+      # 二级节点解析服务端口
+      - app.shr-resolve-port={{ shns_server_port }}
+      # xxl-job-admin服务的访问地址
+      - xxl.job.admin.addresses=http://{{ idmonitor_host }}:8080/xxl-job-admin
+      # 服务本身的地址
+      - xxl.job.executor.ip={{ idmonitor_host }}
+      - xxl.job.executor.port=9999
+      # ES集群配置
+      - elasticsearch.url={% for item in es_host %}
+{{ item }}:{{ es_port }}{{ esconf(loop,sep=",",deli="") }}
+{%- endfor %}
+
+      # 顶级的服务地址,勿动
+      - app.synapi-url=http://xxxxxxx:8110/synapi/result
+    network_mode: host
+    volumes: 
+      - ./conf:/app/resources/conf
+      - ./logs:/target/logs
+      - ./xmls:/target/xmls
+    ports:
+      - 9999:9999
+      - 9101:9101
+    restart: always

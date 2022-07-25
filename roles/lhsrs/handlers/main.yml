@@ -1,0 +1,23 @@
+---
+# handlers file for lhsrs
+- name: restart docker
+  systemd:
+    name: docker
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+
+#- name: restart idhub
+#  docker_compose:
+#    project_src: "{{ item.project_src }}"
+#    state: "{{ item.state }}"
+#  loop:
+#    - state: absent
+#      project_src: /opt/idhub
+#    - state: present
+#      project_src: /opt/idhub
+- name: restart idhub
+  shell:
+    chdir: /opt/idhub
+    cmd: docker-compose down &&docker-compose up -d
+  ignore_errors: true
