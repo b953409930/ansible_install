@@ -18,9 +18,9 @@
   mail:
     host: smtp.qq.com
     port: 465
-    username: 953409930@qq.com
-    password: tegkucszydnxbdha
-    from: 953409930@qq.com
+    username: xxxx
+    password: xxxxx
+    from: xxxxx
     to: "{{ leader_mail }}"
     cc: <{{ my_mail }}>
     #attach: /etc/fstab /etc/hosts
